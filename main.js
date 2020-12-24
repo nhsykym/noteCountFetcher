@@ -17,9 +17,13 @@ const fetchAllNotes = async (magazineId) => {
   return arr.flat();
 };
 
+const orderByCount = (users) => {
+  return users.sort((a, b) => { return b.count - a.count });
+};
+
 const getCountForEachUserInMagazine = async (magazineId) => {
   const contents = await fetchAllNotes(magazineId);
-  let countForEachUser = {};
+  let countForEachUser = [];
 
   // monthは0~11
   const dateFrom = new Date(2020, 11, 1);
@@ -29,15 +33,20 @@ const getCountForEachUserInMagazine = async (magazineId) => {
     const urlname = content.user.urlname;
     const publishAt = new Date(content.publish_at);
     if (dateFrom <= publishAt && publishAt <= dateTo) {
-      if (content.user.urlname in countForEachUser) {
-        countForEachUser[urlname]++;
+      const user = countForEachUser.find((v) => v.name == urlname);
+      if (user) {
+        user.count += 1;
       } else {
-        countForEachUser[urlname] = 1;
+        const newUser = {
+          name: urlname,
+          count: 1
+        };
+        countForEachUser.push(newUser);
       }
     }
   }
 
-  console.log(countForEachUser);
+  console.log(orderByCount(countForEachUser));
 };
 
 // 標準入力からマガジンIDを受け取る
@@ -47,7 +56,7 @@ let reader = require('readline').createInterface({
   output: process.stdout
 });
 
-console.log("enter magazineId then press Cmd + C");
+console.log("Enter magazineId then Press Cmd + D");
 
 reader.on('line', function(line) {
   lines.push(line);
